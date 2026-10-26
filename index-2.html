@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مصنع المواقع</title>
+<style>
+:root{--bg:#f3f5f2;--panel:#fff;--ink:#16211b;--mut:#66736b;--line:#d9e0da;--acc:#0f7a55;--accd:#0a5a3e;--code:#10231b;--codet:#c9f0dc}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1411;--panel:#16201b;--ink:#e8f0eb;--mut:#8fa297;--line:#27352e;--acc:#2fbf8a;--accd:#4fd6a1;--code:#0a100d;--codet:#b9e8d0}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+header h1{font-size:18px;margin:0;margin-inline-end:auto}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 14px;border-radius:8px}
+button:hover{border-color:var(--acc)}
+button.p{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+button.p:hover{background:var(--accd)}
+button:disabled{opacity:.5;cursor:wait}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+main{flex:1;display:grid;grid-template-columns:minmax(300px,420px) 1fr;min-height:0}
+.side{overflow-y:auto;display:flex;flex-direction:column;border-inline-end:1px solid var(--line);background:var(--panel);min-height:0}
+.side label{font-size:13px;color:var(--mut);padding:10px 14px 4px}
+#code{flex:1;min-height:120px;margin:0 14px;border:1px solid var(--line);border-radius:8px;background:var(--code);color:var(--codet);font:12.5px/1.5 Consolas,monospace;padding:10px;resize:none;direction:ltr;text-align:left}
+.row{display:flex;gap:8px;padding:10px 14px;flex-wrap:wrap;align-items:center}
+.row label{padding:0}
+.edit{border-top:1px solid var(--line);padding-bottom:10px}
+#ask{margin:0 14px;width:calc(100% - 28px);height:74px;border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;background:var(--bg);color:var(--ink);resize:vertical}
+details{padding:0 14px 6px;font-size:13px;color:var(--mut)}
+details summary{cursor:pointer;padding:6px 0}
+details input{width:100%;margin-bottom:6px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);direction:ltr;font:inherit}
+#pubmsg,#prevmsg{padding:0 14px 6px;font-size:13px;color:var(--mut);word-break:break-all}#pubmsg a,#prevmsg a{color:var(--acc);font-weight:600}.pub{border-top:1px solid var(--line);padding:8px 0 12px}.pub input{width:calc(100% - 28px);margin:0 14px 6px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);direction:ltr;font:inherit}#gdata{margin:0 14px;width:calc(100% - 28px);height:110px;border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;background:var(--bg);color:var(--ink);resize:vertical}.gen select{flex:1;min-width:120px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}.gen{border-bottom:1px solid var(--line);padding-bottom:6px}#gdata+.fields{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px 14px 0}.fields input{padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;direction:ltr;min-width:0}#gmsg{padding:0 14px 6px;font-size:13px;color:var(--mut)}#msg{padding:0 14px;font-size:13px;min-height:18px;color:var(--mut)}
+.view{display:flex;flex-direction:column;min-height:0;min-width:0}
+.bar{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);align-items:center}
+.bar span{color:var(--mut);font-size:13px;margin-inline-end:auto}
+.stage{flex:1;display:flex;justify-content:center;background:var(--bg);min-height:0;overflow:auto}
+iframe{border:0;background:#fff;width:100%;height:100%;box-shadow:0 0 0 1px var(--line)}
+.stage.m iframe{width:390px;max-width:100%}
+@media (max-width:760px){main{grid-template-columns:1fr;grid-template-rows:auto 1fr}.side{border-inline-end:0;border-bottom:1px solid var(--line)}#code{min-height:110px;flex:none}.view{min-height:60vh}}
+</style>
+</head>
+<body>
+<header>
+  <h1>مصنع المواقع</h1>
+  <button id="dl">تنزيل الموقع</button>
+  <button id="open">معاينة</button>
+</header>
+<main>
+  <section class="side">
+    <div class="gen">
+      <label for="gdata">1) الصق بيانات النشاط من خرائط جوجل</label>
+      <textarea id="gdata" placeholder="افتح النشاط في Google Maps، انسخ: الاسم، العنوان، الهاتف، ساعات العمل، التقييم، آراء العملاء، الخدمات أو القائمة، والصقها هنا. يمكنك لصق نص الصفحة كاملاً."></textarea>
+      <div class="fields">
+        <input id="gwa" placeholder="واتساب الموظف 9665xxxxxxxx" inputmode="tel" aria-label="واتساب">
+        <input id="gmail" placeholder="بريد المدير" aria-label="بريد المدير">
+        <input id="gfb" placeholder="رابط Facebook" aria-label="فيسبوك">
+        <input id="gig" placeholder="رابط Instagram" aria-label="إنستغرام">
+      </div>
+      <div class="row">
+        <select id="gtype" aria-label="نوع النشاط"><option>مطعم</option><option>مقهى</option><option>عيادة</option><option>صالون</option><option>متجر</option><option>شركة خدمات</option><option>عقارات</option><option>نشاط آخر</option></select>
+        <select id="gstyle" aria-label="أسلوب التصميم"><option>فاخر داكن</option><option>عصري ملوّن</option><option>بسيط ونظيف</option><option>دافئ تقليدي</option><option>جريء وحيوي</option></select>
+      </div>
+      <div class="row"><button class="p" id="gen">ولّد الموقع بالذكاء الاصطناعي</button></div>
+      <div id="gmsg" role="status"></div>
+    </div>
+    <label for="code">أو الصق كود موقع جاهز هنا</label>
+    <textarea id="code" spellcheck="false" placeholder="<!DOCTYPE html> ..."></textarea>
+    <div class="row">
+      <button class="p" id="build">ابنِ الموقع</button>
+      <label><input type="checkbox" id="step" checked> بناء تدريجي</label>
+      <button id="clr">مسح</button>
+    </div>
+    <div class="edit">
+      <label for="ask">ماذا تريد أن تغيّر في الموقع؟</label>
+      <textarea id="ask" placeholder="مثال: غيّر لون الأزرار إلى الأزرق وأضف قسم أسئلة شائعة"></textarea>
+      <div class="row"><button class="p" id="send">نفّذ التعديل</button></div>
+      <div id="msg" role="status"></div>
+      <details>
+        <summary>إعدادات الذكاء الاصطناعي (مطلوبة لمربع التعديل فقط)</summary>
+        <input id="key" type="password" placeholder="Gemini API key (AIza...)" autocomplete="off">
+        <input id="model" type="text" value="gemini-2.5-flash" aria-label="اسم النموذج">
+        <div>مفتاح مجاني من aistudio.google.com/apikey. يُحفظ في متصفحك فقط ولا يُرسل إلا إلى Google.</div>
+      </details>
+    </div>
+
+    <div class="pub">
+      <div class="row"><button id="prev">1) رابط المعاينة قبل النشر</button></div>
+      <div id="prevmsg"></div>
+      <details>
+        <summary>2) النشر على الإنترنت (GitHub Pages)</summary>
+        <input id="gtok" type="password" placeholder="GitHub token (ghp_... أو github_pat_...)" autocomplete="off">
+        <input id="gname" type="text" placeholder="اسم الموقع بالإنجليزي مثل my-shop" autocomplete="off">
+        <div>الرمز يحتاج صلاحية repo (Classic) أو Contents وPages وAdministration (Fine-grained). يُحفظ في متصفحك فقط.</div>
+      </details>
+      <div class="row"><button class="p" id="pubbtn">انشر الموقع للعالم</button></div>
+      <div id="pubmsg" role="status"></div>
+    </div>
+  </section>
+  <section class="view">
+    <div class="bar"><span id="st">المعاينة فارغة</span><button id="dev">جوال / حاسوب</button></div>
+    <div class="stage" id="stage"><iframe id="fr" title="معاينة الموقع" sandbox="allow-scripts allow-forms allow-modals allow-popups"></iframe></div>
+  </section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const code=$('code'),fr=$('fr'),msg=$('msg'),st=$('st');
+let timer=null, history=[];
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+$('key').value=store('gkey')||'';$('model').value=store('gmodel')||$('model').value;
+$('key').onchange=e=>store('gkey',e.target.value.trim());
+$('model').onchange=e=>store('gmodel',e.target.value.trim());
+if(store('code'))code.value=store('code');
+
+function render(html){fr.srcdoc=html}
+function build(){
+  clearInterval(timer);
+  const full=code.value;store('code',full);
+  if(!full.trim()){st.textContent='المعاينة فارغة';render('');return}
+  if(!$('step').checked){render(full);st.textContent='تم البناء';return}
+  let i=0;const n=Math.max(40,Math.ceil(full.length/60));
+  st.textContent='جارٍ البناء...';
+  timer=setInterval(()=>{
+    i=Math.min(full.length,i+n);
+    render(full.slice(0,i));
+    if(i>=full.length){clearInterval(timer);st.textContent='تم البناء'}
+  },120);
+}
+$('build').onclick=build;
+$('clr').onclick=()=>{clearInterval(timer);code.value='';store('code','');render('');st.textContent='المعاينة فارغة'};
+code.addEventListener('input',()=>store('code',code.value));
+$('dev').onclick=()=>$('stage').classList.toggle('m');
+let purl=null;
+function preview(){
+  if(!code.value.trim()){$('prevmsg').textContent='الصق الكود أولاً.';return}
+  if(purl)URL.revokeObjectURL(purl);
+  purl=URL.createObjectURL(new Blob([code.value],{type:'text/html'}));
+  $('prevmsg').innerHTML='تم إنشاء الرابط (يعمل على جهازك فقط): <a target="_blank" rel="noopener" href="'+purl+'">افتح المعاينة</a>';
+  window.open(purl,'_blank');
+}
+$('prev').onclick=preview;$('open').onclick=preview;
+$('gtok').value=store('gtok')||'';$('gname').value=store('gname')||'';
+$('gtok').onchange=e=>store('gtok',e.target.value.trim());
+$('gname').onchange=e=>store('gname',e.target.value.trim());
+async function gh(path,method,body){
+  const r=await fetch('https://api.github.com'+path,{method:method||'GET',headers:{'Authorization':'Bearer '+$('gtok').value.trim(),'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  let d={};try{d=await r.json()}catch(e){}
+  return {r,d};
+}
+$('pubbtn').onclick=async()=>{
+  const pm=$('pubmsg'),b=$('pubbtn');
+  const name=$('gname').value.trim().toLowerCase().replace(/[^a-z0-9-_.]/g,'-');
+  if(!code.value.trim()){pm.textContent='الصق الكود أولاً.';return}
+  if(!$('gtok').value.trim()){pm.textContent='أضف GitHub token في قسم النشر.';return}
+  if(!name){pm.textContent='اكتب اسماً للموقع بالإنجليزي.';return}
+  if(!confirm('سيصبح الموقع عاماً يراه أي شخص. هل شاهدت المعاينة وتريد النشر؟'))return;
+  b.disabled=true;pm.textContent='جارٍ النشر...';
+  try{
+    store('gname',name);
+    let u=await gh('/user');if(!u.r.ok)throw new Error('الرمز غير صحيح');
+    const login=u.d.login;
+    let rp=await gh('/repos/'+login+'/'+name);
+    if(rp.r.status===404){rp=await gh('/user/repos','POST',{name:name,auto_init:true,private:false});if(!rp.r.ok)throw new Error(rp.d.message||'تعذّر إنشاء المستودع')}
+    const br=rp.d.default_branch||'main';
+    const ex=await gh('/repos/'+login+'/'+name+'/contents/index.html?ref='+br);
+    const bytes=new TextEncoder().encode(code.value);let bin='';for(let i=0;i<bytes.length;i+=8192)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+8192));
+    const put=await gh('/repos/'+login+'/'+name+'/contents/index.html','PUT',{message:'Publish site',content:btoa(bin),branch:br,sha:ex.r.ok?ex.d.sha:undefined});
+    if(!put.r.ok)throw new Error(put.d.message||'تعذّر رفع الملف');
+    await gh('/repos/'+login+'/'+name+'/pages','POST',{source:{branch:br,path:'/'}});
+    const link='https://'+login+'.github.io/'+(name===login+'.github.io'?'':name+'/');
+    pm.innerHTML='تم النشر. الرابط يعمل خلال دقيقة تقريباً: <a target="_blank" rel="noopener" href="'+link+'">'+link+'</a>';
+  }catch(e){pm.textContent='تعذّر النشر: '+e.message}
+  b.disabled=false;
+};
+$('dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([code.value],{type:'text/html'}));a.download='index.html';a.click()};
+
+function clean(t){
+  const m=t.match(/```(?:html)?\s*([\s\S]*?)```/);
+  if(m)return m[1].trim();
+  const s=t.search(/<!DOCTYPE|<html/i);
+  return (s>=0?t.slice(s):t).trim();
+}
+$('send').onclick=async()=>{
+  const ask=$('ask').value.trim(),key=$('key').value.trim();
+  if(!code.value.trim()){msg.textContent='الصق كود الموقع أولاً.';return}
+  if(!ask){msg.textContent='اكتب التعديل المطلوب في المربع.';return}
+  if(!key){msg.textContent='أضف مفتاح Gemini في الإعدادات أعلاه.';return}
+  const b=$('send');b.disabled=true;msg.textContent='جارٍ تنفيذ التعديل...';
+  history.push(code.value);
+  try{
+    const t=await callAI('You edit a complete single-file HTML website. Apply the requested change and return the FULL updated HTML file only, inside one ```html code block. Keep everything else unchanged. No explanations.','Current code:\n```html\n'+code.value+'\n```\n\nRequested change: '+ask,32000);
+    code.value=clean(t);store('code',code.value);$('ask').value='';
+    $('step').checked=false;build();$('step').checked=true;
+    msg.textContent='تم التعديل.';
+  }catch(e){history.pop();msg.textContent='تعذّر التعديل: '+e.message}
+  b.disabled=false;
+};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function callAI(sys,user,max,tries){
+  tries=tries||4;
+  for(let i=0;i<tries;i++){
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent($('model').value.trim())+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':$('key').value.trim()},
+      body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:user}]}],generationConfig:{maxOutputTokens:max||16000}})});
+    const d=await r.json();
+    if(r.status===429||r.status===503){await sleep(9000*(i+1));continue}
+    if(!r.ok)throw new Error(d.error&&d.error.message||('HTTP '+r.status));
+    const t=((d.candidates||[])[0]?.content?.parts||[]).map(x=>x.text||'').join('');
+    if(t)return t;
+  }
+  throw new Error('الخدمة مشغولة أو انتهت الحصة المجانية، انتظر دقيقة وأعد المحاولة');
+}
+const SYS_PLAN="You are a senior web designer building a UNIQUE, real, premium website for a local business (not a generic template). The design MUST feel 3D and luxurious: layered depth, perspective cards (use class .card on every card), soft deep shadows, gradients, smooth animations. Reply in exactly this format, nothing else:\n===CSS===\n(complete CSS: :root variables, distinctive palette, Google Fonts @import for Arabic+Latin, responsive, sticky nav, buttons, .card with transform-style:preserve-3d, grids, hero, sections, footer; define every class you use)\n===SECTIONS===\n(JSON array of 6-7 objects {\"id\",\"brief\"}, in this order: 'hero' (includes <header> nav + main call-to-action), 'about', 'featured' (top dishes/services/rooms/products with prices only if given), 'menu' (full menu/services/products organized by category if data exists, else merge into featured), 'reviews' (latest reviews, newest first, only real ones from data), 'footer' (contact, opening hours, map, directions button, social, copyright))";
+const SYS_SEC="Write ONLY the HTML for ONE section of a BILINGUAL website using the provided CSS classes (inline styles allowed). EVERY visible text must be written twice: <span class=\"ar\">Arabic</span><span class=\"en\">English</span> (translate faithfully). Use ONLY facts in the business data. Never invent phone numbers, addresses, prices, names or reviews; if missing, omit. No external images: use CSS gradients, shapes or inline SVG. Put class card on cards. Map: <iframe src=\"https://maps.google.com/maps?q=URL_ENCODED_ADDRESS&output=embed\" loading=\"lazy\" style=\"border:0;width:100%;height:320px\"></iframe> plus a directions link https://www.google.com/maps/dir/?api=1&destination=URL_ENCODED_ADDRESS when an address exists. Use tel: for phone. Return raw HTML only, no markdown fences.";
+const LAYOUTS=['hero مقسوم عمودين مع بطاقة معلومات','hero بخلفية تدرج كبير وبطاقة زجاجية','hero متمركز مع شريط معلومات سريع تحته','hero غير متماثل بأشكال هندسية كبيرة','hero بعنوان ضخم وعناصر SVG عائمة'];
+function pack(o){
+  const wa=(o.wa||'').replace(/\D/g,''),L=(a,e)=>'<span class="ar">'+a+'</span><span class="en">'+e+'</span>';
+  const soc=(o.fb?'<a href="'+o.fb+'" target="_blank" rel="noopener" aria-label="Facebook">f</a>':'')+(o.ig?'<a href="'+o.ig+'" target="_blank" rel="noopener" aria-label="Instagram">ig</a>':'');
+  return '<style>html[lang=ar] .en{display:none!important}html[lang=en] .ar{display:none!important}.card{transform-style:preserve-3d;transition:transform .25s ease,box-shadow .25s}#fx{position:fixed;inset-inline-start:14px;bottom:14px;display:flex;flex-direction:column;gap:8px;z-index:99}#fx a,#fx button{width:46px;height:46px;border-radius:50%;border:0;background:#25d366;color:#fff;font:700 14px sans-serif;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.3);cursor:pointer}#fx a.s{background:#333}#lt{position:fixed;top:12px;inset-inline-end:12px;z-index:99;padding:8px 14px;border-radius:20px;border:0;background:rgba(0,0,0,.75);color:#fff;font:600 13px sans-serif;cursor:pointer}#pv{position:fixed;bottom:10px;inset-inline-end:12px;z-index:99;font:12px sans-serif;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:14px;padding:6px 12px;cursor:pointer}#pm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:16px}#pm div{background:#fff;color:#222;max-width:520px;max-height:80vh;overflow:auto;padding:22px;border-radius:14px;font:14px/1.8 sans-serif}</style>'
+  +'<button id="lt">'+'<span class="ar">English</span><span class="en">العربية</span></button>'
+  +'<div id="fx">'+(wa?'<a href="https://wa.me/'+wa+'" target="_blank" rel="noopener" aria-label="WhatsApp">WA</a>':'')+soc.replace(/<a /g,'<a class="s" ')+'</div>'
+  +'<button id="pv">'+L('الخصوصية والشروط','Privacy & Terms')+'</button>'
+  +'<div id="pm"><div>'+L('<b>سياسة الخصوصية والشروط</b><br>نحترم خصوصيتك. لا نجمع بيانات شخصية عبر هذا الموقع، والتواصل يتم مباشرة عبر واتساب أو الهاتف. الأسعار والتوفر قابلة للتغيير، والتأكيد النهائي للطلب من فريقنا.','<b>Privacy Policy & Terms</b><br>We respect your privacy. This site does not collect personal data; contact is made directly via WhatsApp or phone. Prices and availability may change, and final order confirmation comes from our team.')+'<br><br><button style="padding:8px 18px;border:0;border-radius:8px;background:#222;color:#fff">'+L('إغلاق','Close')+'</button></div></div>'
+  +'<script>(function(){var d=document,h=d.documentElement;function set(l){h.lang=l;h.dir=l==="ar"?"rtl":"ltr";try{localStorage.setItem("lang",l)}catch(e){}}var l="ar";try{l=localStorage.getItem("lang")||"ar"}catch(e){}set(l);d.getElementById("lt").onclick=function(){set(h.lang==="ar"?"en":"ar")};var m=d.getElementById("pm");d.getElementById("pv").onclick=function(){m.style.display="flex"};m.onclick=function(e){if(e.target===m||e.target.tagName==="BUTTON")m.style.display="none"};d.querySelectorAll(".card").forEach(function(c){c.addEventListener("mousemove",function(e){var r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;c.style.transform="perspective(700px) rotateY("+x*8+"deg) rotateX("+-y*8+"deg) translateZ(6px)"});c.addEventListener("mouseleave",function(){c.style.transform=""})})})();<\/script>';
+}
+$('gen').onclick=async()=>{
+  const gm=$('gmsg'),b=$('gen');let data=$('gdata').value.trim();
+  if(!data){gm.textContent='الصق بيانات النشاط أولاً.';return}
+  if(!$('key').value.trim()){gm.textContent='أضف مفتاح Gemini في «إعدادات الذكاء الاصطناعي» بالأسفل.';return}
+  const o={wa:$('gwa').value,mail:$('gmail').value.trim(),fb:$('gfb').value.trim(),ig:$('gig').value.trim()};
+  data+='\n\nواتساب الطلبات: '+o.wa+'\nالبريد: '+o.mail+'\nFacebook: '+o.fb+'\nInstagram: '+o.ig;
+  b.disabled=true;clearInterval(timer);
+  try{
+    const type=$('gtype').value,style=$('gstyle').value,lay=LAYOUTS[Math.floor(Math.random()*LAYOUTS.length)];
+    gm.textContent='جارٍ تصميم هيكل الموقع...';
+    const plan=await callAI(SYS_PLAN,'نوع النشاط: '+type+'\nأسلوب التصميم: '+style+'\nتنويع إلزامي: '+lay+'\nرقم للتفرد: '+Math.random().toString(36).slice(2,8)+'\nبيانات النشاط:\n'+data,16000);
+    const ci=plan.indexOf('===CSS==='),si=plan.indexOf('===SECTIONS===');
+    if(ci<0||si<0)throw new Error('رد غير متوقع، أعد المحاولة');
+    const css=plan.slice(ci+8,si).replace(/```css|```/g,'').trim();
+    const secs=JSON.parse(plan.slice(si+14).replace(/```json|```/g,'').trim());
+    const title=data.split('\n')[0].slice(0,50).replace(/[<>]/g,'');
+    const head='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+title+'</title><style>'+css+'</style></head><body>';
+    const tail=pack(o)+'</body></html>';
+    const parts=new Array(secs.length).fill(''),ids=secs.map(x=>x.id).join(', ');let done=0;
+    gm.textContent='جارٍ بناء الأقسام معاً...';
+    await Promise.all(secs.map((sc,i)=>callAI(SYS_SEC,'CSS:\n'+css+'\n\nأقسام الموقع: '+ids+'\n\nالقسم المطلوب: '+sc.id+' — '+sc.brief+'\n\nبيانات النشاط:\n'+data,16000).then(h=>{
+      parts[i]=clean(h);done++;gm.textContent='اكتمل '+done+' من '+secs.length+' أقسام...';
+      code.value=head+parts.join('\n')+tail;render(code.value);st.textContent='جارٍ البناء...';
+    })));
+    store('code',code.value);st.textContent='تم البناء';gm.textContent='تم توليد الموقع. عدّل من المربع بالأسفل ثم عاينه وانشره.';
+  }catch(e){gm.textContent='تعذّر التوليد: '+e.message}
+  b.disabled=false;
+};
+if(code.value.trim())build();
+</script>
+</body>
+</html>
